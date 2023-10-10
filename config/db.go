@@ -9,8 +9,9 @@ import (
 )
 
 type DBCollections struct {
-	AuthorModel *mongo.Collection
-	LyricsModel *mongo.Collection
+	AuthorModel  *mongo.Collection
+	LyricsModel  *mongo.Collection
+	ProgramModel *mongo.Collection
 }
 
 var DatabaseInstance *mongo.Database
@@ -53,7 +54,8 @@ func (db *Db) GetDbInstance() *mongo.Database {
 
 func GetCollections() DBCollections {
 	return DBCollections{
-		AuthorModel: DatabaseInstance.Collection("authors"),
-		LyricsModel: DatabaseInstance.Collection("lyrics"),
+		AuthorModel:  DatabaseInstance.Collection("authors"),
+		LyricsModel:  DatabaseInstance.Collection("lyrics"),
+		ProgramModel: DatabaseInstance.Collection("programs"),
 	}
 }
