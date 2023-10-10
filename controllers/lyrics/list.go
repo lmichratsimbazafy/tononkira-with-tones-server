@@ -3,6 +3,7 @@ package lyrics
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,8 +14,9 @@ import (
 )
 
 type LyricsListParams struct {
-	Author string `form:"author"`
-	Title  string `form:"title"`
+	Author   string    `form:"author"`
+	Title    string    `form:"title"`
+	FromDate time.Time `form:"fromDate"`
 	helpers.DefaultPaginationParams
 }
 
@@ -42,6 +44,9 @@ func List(c *gin.Context) {
 			panic(err)
 		}
 		filter = append(filter, bson.E{Key: "authors", Value: bson.M{"$in": []primitive.ObjectID{authorId}}})
+	}
+	if !listParams.FromDate.IsZero() {
+		filter = append(filter, bson.E{Key: "created_at", Value: bson.M{"$gt": listParams.FromDate}})
 	}
 	if listParams.Page >= 0 {
 		paginationOptions.Page = listParams.Page
