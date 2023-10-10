@@ -55,12 +55,12 @@ func upsertAuthors(input [][]string) {
 }
 
 func upsertAuthor(name string, authorModel *mongo.Collection) *models.Author {
-	var author models.Author
+	var author *models.Author
 	res := authorModel.FindOne(context.TODO(), bson.D{{Key: "name", Value: bson.M{"$regex": name, "$options": "i"}}})
 
 	if res.Err() != nil {
-		author = models.Author{Name: name}
-		result, err := authorModel.InsertOne(context.TODO(), &author)
+		author = &models.Author{Name: name}
+		result, err := authorModel.InsertOne(context.TODO(), author)
 		if err != nil {
 			panic(err)
 		}
@@ -70,7 +70,7 @@ func upsertAuthor(name string, authorModel *mongo.Collection) *models.Author {
 		log.Fatal("error while decoding author data")
 	}
 	fmt.Println("there is already author with name ", name)
-	return &author
+	return author
 }
 
 func upsertLyrics(input []models.JSONLyrics) {
@@ -82,7 +82,7 @@ func upsertLyrics(input []models.JSONLyrics) {
 		for _, author := range v.Authors {
 			authorIds = append(authorIds, upsertAuthor(author, authorModel).ID)
 		}
-		lyrics := models.Lyrics{
+		lyrics := &models.Lyrics{
 			Authors: authorIds,
 			Lyrics:  v.Lyrics,
 			Tone:    v.Tone,
@@ -92,7 +92,7 @@ func upsertLyrics(input []models.JSONLyrics) {
 	}
 }
 
-func upsertOneLyrics(lyrics models.Lyrics, lyricsModel *mongo.Collection) *models.Lyrics {
+func upsertOneLyrics(lyrics *models.Lyrics, lyricsModel *mongo.Collection) *models.Lyrics {
 
 	res := lyricsModel.FindOne(context.TODO(), bson.D{{Key: "authors", Value: bson.M{"$in": lyrics.Authors}}, {Key: "title", Value: lyrics.Title}})
 
@@ -106,7 +106,7 @@ func upsertOneLyrics(lyrics models.Lyrics, lyricsModel *mongo.Collection) *model
 		log.Fatalf("error while decoding lyrics %s", lyrics.Title)
 	}
 	fmt.Printf("there is already lyrics with author %s and with title %s ", lyrics.Authors[len(lyrics.Authors)-1], lyrics.Title)
-	return &lyrics
+	return lyrics
 }
 
 func seed() {
