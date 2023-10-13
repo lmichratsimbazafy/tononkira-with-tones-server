@@ -8,6 +8,7 @@ import (
 )
 
 type Environment struct {
+	DbUri             string
 	DbUser            string
 	DbPassword        string
 	DbHost            string
@@ -26,21 +27,25 @@ func Getenv() *Environment {
 	if port == "" {
 		log.Fatal("You must set your 'PORT' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
+
+	dbUri := os.Getenv("DB_URI")
 	dbUser := os.Getenv("DB_USER")
-	if dbUser == "" {
-		log.Fatal("You must set your 'DB_USER' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
 	dbPassword := os.Getenv("DB_PASSWORD")
-	if dbPassword == "" {
-		log.Fatal("You must set your 'DB_PASSWORD' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
 	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		log.Fatal("You must set your 'DB_HOST' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
 	dbPort := os.Getenv("DB_PORT")
-	if dbPort == "" {
-		log.Fatal("You must set your 'DB_PORT' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	if dbUri == "" {
+		if dbUser == "" {
+			log.Fatal("You must set your 'DB_USER' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+		}
+		if dbPassword == "" {
+			log.Fatal("You must set your 'DB_PASSWORD' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+		}
+		if dbHost == "" {
+			log.Fatal("You must set your 'DB_HOST' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+		}
+		if dbPort == "" {
+			log.Fatal("You must set your 'DB_PORT' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+		}
 	}
 	dbName := os.Getenv("DB_NAME")
 	if dbName == "" {
@@ -58,5 +63,6 @@ func Getenv() *Environment {
 		DbName:            dbName,
 		ApiPort:           port,
 		LocalScriptDBHost: localScriptDBHost,
+		DbUri:             dbUri,
 	}
 }
