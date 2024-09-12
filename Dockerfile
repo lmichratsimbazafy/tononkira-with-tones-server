@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /tononkira cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/tononkira cmd/server/main.go
 
 # Stage 2: Create a small final image
 FROM alpine:3.18
@@ -19,7 +19,7 @@ FROM alpine:3.18
 WORKDIR /root/
 
 # Copy the Go binary from the builder
-COPY --from=builder /tononkira .
+COPY --from=builder /app/tononkira .
 
 # Expose the application's port
 EXPOSE 8080
