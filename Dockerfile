@@ -3,9 +3,10 @@ FROM golang:1.21-alpine
 
 WORKDIR /app
 
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/cosmtrek/air@v1.40.4
 
-COPY go.mod go.sum ./
+COPY . .
 RUN go mod download
+EXPOSE 8080
 
 CMD ["air", "-c", ".air.toml"]
