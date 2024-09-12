@@ -16,7 +16,12 @@ type Environment struct {
 	DbName            string
 	ApiPort           string
 	LocalScriptDBHost string
+	JWTSecret         string
+	BcryptSecret      string
+	AdminUserName     string
 }
+
+var Env *Environment
 
 func Getenv() *Environment {
 	err := godotenv.Load()
@@ -26,6 +31,18 @@ func Getenv() *Environment {
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("You must set your 'PORT' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("You must set your 'JWT_SECRET' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+	adminUserName := os.Getenv("ADMIN_USERNAME")
+	if adminUserName == "" {
+		log.Fatal("You must set your 'ADMIN_USERNAME' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+	bcryptSecret := os.Getenv("BCRYPT_SECRET")
+	if bcryptSecret == "" {
+		log.Fatal("You must set your 'BCRYPT_SECRET' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
 
 	dbUri := os.Getenv("DB_URI")
@@ -55,7 +72,7 @@ func Getenv() *Environment {
 	if localScriptDBHost == "" {
 		log.Fatal("You must set your 'LOCAL_SCRIPT_DB_HOST' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
-	return &Environment{
+	Env = &Environment{
 		DbUser:            dbUser,
 		DbPassword:        dbPassword,
 		DbHost:            dbHost,
@@ -64,5 +81,9 @@ func Getenv() *Environment {
 		ApiPort:           port,
 		LocalScriptDBHost: localScriptDBHost,
 		DbUri:             dbUri,
+		JWTSecret:         jwtSecret,
+		BcryptSecret:      bcryptSecret,
+		AdminUserName:     adminUserName,
 	}
+	return Env
 }

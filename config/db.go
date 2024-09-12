@@ -9,11 +9,12 @@ import (
 )
 
 type DBCollections struct {
-	AuthorModel  *mongo.Collection
-	LyricsModel  *mongo.Collection
-	ProgramModel *mongo.Collection
-	UserModel    *mongo.Collection
-	RoleModel    *mongo.Collection
+	AuthorModel    *mongo.Collection
+	LyricsModel    *mongo.Collection
+	ProgramModel   *mongo.Collection
+	UserModel      *mongo.Collection
+	RoleModel      *mongo.Collection
+	AuthTokenModel *mongo.Collection
 }
 
 var DatabaseInstance *mongo.Database
@@ -24,15 +25,16 @@ type Db struct {
 }
 
 const (
-	Authors  = "authors"
-	Lyrics   = "lyrics"
-	Programs = "programs"
-	Users    = "users"
-	Roles    = "roles"
+	Authors    = "authors"
+	Lyrics     = "lyrics"
+	Programs   = "programs"
+	Users      = "users"
+	Roles      = "roles"
+	AuthTokens = "authTokens"
 )
 
 func (db *Db) Connect(needLocalDb bool) *mongo.Client {
-	env := Getenv()
+	env := Env
 	var host string
 
 	if needLocalDb == true {
@@ -61,17 +63,18 @@ func (db *Db) Disconnect() {
 }
 
 func (db *Db) GetDbInstance() *mongo.Database {
-	env := Getenv()
+	env := Env
 	dataBase := db.Client.Database(env.DbName)
 	return dataBase
 }
 
 func GetCollections() DBCollections {
 	return DBCollections{
-		AuthorModel:  DatabaseInstance.Collection(Authors),
-		LyricsModel:  DatabaseInstance.Collection(Lyrics),
-		ProgramModel: DatabaseInstance.Collection(Programs),
-		UserModel:    DatabaseInstance.Collection(Users),
-		RoleModel:    DatabaseInstance.Collection(Roles),
+		AuthorModel:    DatabaseInstance.Collection(Authors),
+		LyricsModel:    DatabaseInstance.Collection(Lyrics),
+		ProgramModel:   DatabaseInstance.Collection(Programs),
+		UserModel:      DatabaseInstance.Collection(Users),
+		RoleModel:      DatabaseInstance.Collection(Roles),
+		AuthTokenModel: DatabaseInstance.Collection(AuthTokens),
 	}
 }

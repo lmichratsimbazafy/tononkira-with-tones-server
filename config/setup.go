@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 type SetupOptions struct {
 	Run         func()
 	OnClose     func()
@@ -7,9 +9,11 @@ type SetupOptions struct {
 }
 
 func Setup(options *SetupOptions) {
+	Getenv()
 	dbConnexion := new(Db)
 	dbConnexion.Client = dbConnexion.Connect(options.NeedLocalDb)
 	DatabaseInstance = dbConnexion.GetDbInstance()
+	fmt.Println("connected to mongoDb")
 	options.Run()
 	defer close(dbConnexion, options.OnClose)
 }

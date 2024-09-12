@@ -1,4 +1,4 @@
-package models
+package mongodb
 
 import (
 	"context"
@@ -7,8 +7,14 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"lmich.com/tononkira/config"
+	"lmich.com/tononkira/domain"
 )
+
+type MongoLyricsService struct {
+	Collection *mongo.Collection
+}
 
 type Lyrics struct {
 	ID        primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
@@ -20,57 +26,52 @@ type Lyrics struct {
 	UpdatedAt time.Time            `json:"updatedAt" bson:"updated_at"`
 }
 
-type JSONLyrics struct {
-	Authors []string `json:"authors"`
-	Lyrics  []string `json:"lyrics"`
-	Tone    string   `json:"tone"`
-	Title   string   `json:"title"`
-}
-
-type ApiLyrics struct {
-	ID        primitive.ObjectID `json:"id"`
-	Lyrics    []string           `json:"lyrics"`
-	Authors   []Author           `json:"authors"`
-	Tone      string             `json:"tone"`
-	Title     string             `json:"title"`
-	CreatedAt time.Time          `json:"createdAt"`
-	UpdatedAt time.Time          `json:"updatedAt"`
-}
-
-func (l *Lyrics) GetAuthors() []Author {
+func (l *Lyrics) GetAuthors() ([]Author, error) {
 	coll := config.GetCollections().AuthorModel
 	var authors []Author
 	filter := bson.D{{Key: "_id", Value: bson.M{"$in": l.Authors}}}
 	cursor, err := coll.Find(context.TODO(), filter)
 	if err != nil {
 		log.Fatalln("error while fetching authors", err)
+		return nil, err
 	}
 	if err = cursor.All(context.TODO(), &authors); err != nil {
 		panic(err)
 	}
 	cursor.Close(context.Background())
-	return authors
+	return authors, nil
 }
 
-func (l *Lyrics) ToApi() ApiLyrics {
-	authors := l.GetAuthors()
-	return ApiLyrics{
-		ID:        l.ID,
+func (l *Lyrics) ToApi() (domain.Lyrics, error) {
+	authors, err := l.GetAuthors()
+	if err != nil {
+		return domain.Lyrics{}, err
+	}
+	authorsApi := []domain.Author{}
+	for _, author := range authors {
+
+		authorsApi = append(authorsApi, domain.Author{
+			ID:        author.ID.Hex(),
+			Name:      author.Name,
+			CreatedAt: author.CreatedAt,
+			UpdatedAt: author.UpdatedAt,
+		})
+	}
+	return domain.Lyrics{
+		ID:        l.ID.Hex(),
 		Lyrics:    l.Lyrics,
 		Tone:      l.Tone,
 		Title:     l.Title,
-		Authors:   authors,
+		Authors:   authorsApi,
 		CreatedAt: l.CreatedAt,
 		UpdatedAt: l.UpdatedAt,
-	}
+	}, nil
+}
+func (m *MongoLyricsService) List(params domain.PaginationOptions) (domain.PaginateResult[domain.Lyrics], error) {
+	return Paginate[domain.Lyrics, *Lyrics](m.Collection, params)
 }
 
-func (l *Lyrics) MarshalBSON() ([]byte, error) {
-	if l.CreatedAt.IsZero() {
-		l.CreatedAt = time.Now()
-	}
-	l.UpdatedAt = time.Now()
-
-	type my Lyrics
-	return bson.Marshal((*my)(l))
+func (m *MongoLyricsService) Create(l *domain.Lyrics) error {
+	_, err := m.Collection.InsertOne(context.TODO(), l)
+	return err
 }

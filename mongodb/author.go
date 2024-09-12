@@ -1,4 +1,4 @@
-package models
+package mongodb
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lmich.com/tononkira/config"
+	"lmich.com/tononkira/domain"
 )
 
 type Author struct {
@@ -41,15 +42,26 @@ func (a *Author) GetSongs() []Lyrics {
 	return songs
 }
 
-func (a *Author) ToApi() ApiAuthor {
+func (a *Author) ToApi() (domain.Author, error) {
 	songs := a.GetSongs()
-	return ApiAuthor{
-		ID:        a.ID,
+	songsApi := []domain.Lyrics{}
+	for _, song := range songs {
+		songsApi = append(songsApi, domain.Lyrics{
+			ID:        song.ID.Hex(),
+			Lyrics:    song.Lyrics,
+			Tone:      song.Tone,
+			Title:     song.Title,
+			CreatedAt: song.CreatedAt,
+			UpdatedAt: song.UpdatedAt,
+		})
+	}
+	return domain.Author{
+		ID:        a.ID.Hex(),
 		Name:      a.Name,
-		Songs:     songs,
+		Songs:     songsApi,
 		CreatedAt: a.CreatedAt,
 		UpdatedAt: a.UpdatedAt,
-	}
+	}, nil
 }
 
 func (a *Author) MarshalBSON() ([]byte, error) {

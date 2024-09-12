@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"lmich.com/tononkira/config"
 	"lmich.com/tononkira/helpers"
-	"lmich.com/tononkira/models"
+	"lmich.com/tononkira/mongodb"
 )
 
 func getAuthorsFromFile() [][]string {
@@ -23,10 +23,17 @@ func getAuthorsFromFile() [][]string {
 	return helpers.ReadCsv(path)
 }
 
-func getLyricsFromFile() []models.JSONLyrics {
+type JSONLyrics struct {
+	Authors []string `json:"authors"`
+	Lyrics  []string `json:"lyrics"`
+	Tone    string   `json:"tone"`
+	Title   string   `json:"title"`
+}
+
+func getLyricsFromFile() []JSONLyrics {
 	dir := helpers.GetCurrentDirPath()
 	path := filepath.Join(dir, "..", "static", "lyrics")
-	var songList []models.JSONLyrics
+	var songList []JSONLyrics
 	err := filepath.WalkDir(path, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
@@ -34,7 +41,7 @@ func getLyricsFromFile() []models.JSONLyrics {
 		}
 		if !info.IsDir() {
 			fmt.Printf("visited file or dir: %q\n", path)
-			data := helpers.ReadJSON[[]models.JSONLyrics](path)
+			data := helpers.ReadJSON[[]JSONLyrics](path)
 			songList = append(songList, data...)
 		}
 		return err
@@ -54,12 +61,12 @@ func upsertAuthors(input [][]string) {
 	}
 }
 
-func upsertAuthor(name string, authorModel *mongo.Collection) *models.Author {
-	var author *models.Author
+func upsertAuthor(name string, authorModel *mongo.Collection) *mongodb.Author {
+	var author *mongodb.Author
 	res := authorModel.FindOne(context.TODO(), bson.D{{Key: "name", Value: bson.M{"$regex": name, "$options": "i"}}})
 
 	if res.Err() != nil {
-		author = &models.Author{Name: name}
+		author = &mongodb.Author{Name: name}
 		result, err := authorModel.InsertOne(context.TODO(), author)
 		if err != nil {
 			panic(err)
@@ -73,7 +80,7 @@ func upsertAuthor(name string, authorModel *mongo.Collection) *models.Author {
 	return author
 }
 
-func upsertLyrics(input []models.JSONLyrics) {
+func upsertLyrics(input []JSONLyrics) {
 	songList := getLyricsFromFile()
 	authorModel := config.GetCollections().AuthorModel
 	lyricsModel := config.GetCollections().LyricsModel
@@ -82,7 +89,7 @@ func upsertLyrics(input []models.JSONLyrics) {
 		for _, author := range v.Authors {
 			authorIds = append(authorIds, upsertAuthor(author, authorModel).ID)
 		}
-		lyrics := &models.Lyrics{
+		lyrics := &mongodb.Lyrics{
 			Authors: authorIds,
 			Lyrics:  v.Lyrics,
 			Tone:    v.Tone,
@@ -92,7 +99,7 @@ func upsertLyrics(input []models.JSONLyrics) {
 	}
 }
 
-func upsertOneLyrics(lyrics *models.Lyrics, lyricsModel *mongo.Collection) *models.Lyrics {
+func upsertOneLyrics(lyrics *mongodb.Lyrics, lyricsModel *mongo.Collection) *mongodb.Lyrics {
 
 	res := lyricsModel.FindOne(context.TODO(), bson.D{{Key: "authors", Value: bson.M{"$in": lyrics.Authors}}, {Key: "title", Value: lyrics.Title}})
 
