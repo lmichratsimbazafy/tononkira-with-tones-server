@@ -37,10 +37,10 @@ func (db *Db) Connect(needLocalDb bool) *mongo.Client {
 	env := Env
 	var host string
 
-	if needLocalDb == true {
-		host = env.LocalScriptDBHost
-	} else {
+	if needLocalDb {
 		host = env.DbHost
+	} else {
+		host = env.LocalScriptDBHost
 	}
 	var uri string
 	if env.DbUri != "" {
