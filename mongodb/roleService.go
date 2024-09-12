@@ -1,9 +1,14 @@
 package mongodb
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"lmich.com/tononkira/config"
 	"lmich.com/tononkira/domain"
 )
 
@@ -33,4 +38,22 @@ func (r *Role) ToApi() domain.Role {
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
 	}
+}
+
+func (r *Role) Upsert() (*Role, error) {
+	roleModel := config.GetCollections().RoleModel
+	res := roleModel.FindOne(context.TODO(), bson.D{{Key: "slug", Value: bson.M{"$regex": r.Slug, "$options": "i"}}})
+
+	if res.Err() != nil {
+		result, err := roleModel.InsertOne(context.TODO(), r)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(`Created role `, result)
+		r.ID = result.InsertedID.(primitive.ObjectID)
+	} else if err := res.Decode(&r); err != nil {
+		log.Fatal("error while decoding role data")
+	}
+	fmt.Println("there is already role with name ", r.Name)
+	return r, nil
 }
