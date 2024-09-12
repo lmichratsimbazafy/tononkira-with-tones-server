@@ -1,12 +1,28 @@
-# Choose whatever you want, version >= 1.16
-FROM golang:1.21-alpine
+# Stage 1: Build the Go app
+FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 
-RUN go install github.com/cosmtrek/air@v1.40.4
-
-COPY . .
+# Download dependencies
+COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the Go application
+RUN CGO_ENABLED=0 GOOS=linux go build -o /tononkira cmd/server/main.go
+
+# Stage 2: Create a small final image
+FROM alpine:3.18
+
+WORKDIR /root/
+
+# Copy the Go binary from the builder
+COPY --from=builder /tononkira .
+
+# Expose the application's port
 EXPOSE 8080
 
-CMD ["air", "-c", ".air.toml"]
+# Start the application
+CMD ["./tononkira"]
