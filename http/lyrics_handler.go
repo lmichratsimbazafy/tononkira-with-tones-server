@@ -43,7 +43,8 @@ func (l *LyricshHandler) List(c *gin.Context) {
 	if uriParams.ID != "" {
 		authorId, err := primitive.ObjectIDFromHex(uriParams.ID)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"errors": "invalid author id"})
+			return
 		}
 		filter = append(filter, bson.E{Key: "authors", Value: bson.M{"$in": []primitive.ObjectID{authorId}}})
 	}

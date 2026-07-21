@@ -15,13 +15,13 @@ services:
   tononkira:
     build:
       context: .
-      # Correct the path to your Dockerfile
       dockerfile: Dockerfile
     ports:
       - 8080:8080
     depends_on:
       - mongo
     restart: always
-    # Important to bind/mount your codebase dir to /app dir for live reload
+    env_file:
+      - .env
     volumes:
       - ./:/app

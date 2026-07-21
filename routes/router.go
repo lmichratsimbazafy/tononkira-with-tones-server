@@ -24,7 +24,7 @@ func (r *Router) InitRoutes() {
 	r.Router.Use(sessions.Sessions("mysession", cookie.NewStore([]byte("authToken"))))
 
 	// Create MongoDB service
-	authService := auth.NewJWTService("mysecretkey", time.Hour*24)
+	authService := auth.NewJWTService(config.Env.JWTSecret, time.Hour*24)
 	lyricsService := &mongodb.MongoLyricsService{Collection: config.GetCollections().LyricsModel}
 	userService := &mongodb.MongoUserService{Collection: config.GetCollections().UserModel}
 	authMiddleware := auth.NewAuthMiddleware(authService)

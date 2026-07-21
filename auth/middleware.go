@@ -36,16 +36,15 @@ func (am *AuthMiddleware) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Valider le token via le service d'authentification
-		userId, err := am.AuthService.ValidateToken(token)
+		user, err := am.AuthService.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 			c.Abort()
 			return
 		}
 
-		// Stocker l'ID de l'utilisateur dans le contexte pour un usage ultérieur
-		c.Set("userId", userId)
+		c.Set("user", user)
+		c.Set("userId", user.ID)
 		c.Next() // Passer à la route suivante
 	}
 }

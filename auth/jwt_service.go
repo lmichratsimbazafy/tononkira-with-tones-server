@@ -51,6 +51,13 @@ func (s *JWTService) ValidateToken(encodedToken string) (*domain.User, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	userID := claims["user_id"].(string)
+	userIDClaim, ok := claims["user_id"]
+	if !ok {
+		return nil, errors.New("invalid token: missing user_id")
+	}
+	userID, ok := userIDClaim.(string)
+	if !ok {
+		return nil, errors.New("invalid token: invalid user_id")
+	}
 	return &domain.User{ID: userID}, nil
 }

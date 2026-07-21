@@ -29,7 +29,7 @@ func UpsertSuperAdminAdmin() {
 		if err != nil {
 			log.Fatalf("error while role upsert %v", err)
 		}
-		password, err := helpers.EncryptPassword("Password123!")
+		password, err := helpers.EncryptPassword(config.Env.AdminPassword)
 		if err != nil {
 			log.Fatalf("error while encrypting password %v", err)
 		}

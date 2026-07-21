@@ -24,6 +24,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	var credentials AuthPayload
 	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": fmt.Sprintf("%v", err)})
+		return
 	}
 
 	user, err := h.UserService.GetUser(domain.UserFilter{UserName: credentials.UserName})
@@ -43,7 +44,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		fmt.Println("error while validating token", gin.H{"errors": fmt.Sprintf("%v", err)})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, token)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func checkPassword(password, hash string) error {

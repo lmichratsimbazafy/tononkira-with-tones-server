@@ -19,6 +19,7 @@ type Environment struct {
 	JWTSecret         string
 	BcryptSecret      string
 	AdminUserName     string
+	AdminPassword     string
 }
 
 var Env *Environment
@@ -39,6 +40,10 @@ func Getenv() *Environment {
 	adminUserName := os.Getenv("ADMIN_USERNAME")
 	if adminUserName == "" {
 		log.Fatal("You must set your 'ADMIN_USERNAME' environment variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+	if adminPassword == "" {
+		log.Fatal("You must set your 'ADMIN_PASSWORD' environment variable.")
 	}
 	bcryptSecret := os.Getenv("BCRYPT_SECRET")
 	if bcryptSecret == "" {
@@ -84,6 +89,7 @@ func Getenv() *Environment {
 		JWTSecret:         jwtSecret,
 		BcryptSecret:      bcryptSecret,
 		AdminUserName:     adminUserName,
+		AdminPassword:     adminPassword,
 	}
 	return Env
 }
