@@ -51,10 +51,10 @@ func (m *MongoUserService) GetUser(userFilter domain.UserFilter) (*domain.User, 
 		return nil, err
 	}
 	apiUser, err := user.ToApi()
-
 	if err != nil {
 		return nil, err
 	}
+	apiUser.Password = user.Password
 	return &apiUser, nil
 }
 
@@ -86,6 +86,5 @@ func (u *User) ToApi() (domain.User, error) {
 		Role:      role.ToApi(),
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
-		Password:  u.Password,
 	}, nil
 }

@@ -71,8 +71,10 @@ func Paginate[O interface{}, V ModelApi[O]](coll *mongo.Collection, paginateOpti
 		panic(err)
 	}
 	cursor.Close(context.Background())
-	itemsPerPage := *findOptions.Limit
-	if *findOptions.Limit > 0 {
+	var itemsPerPage int64
+	if paginateOption.Limit > 0 {
+		itemsPerPage = paginateOption.Limit
+	} else {
 		itemsPerPage = int64(len(results))
 	}
 	resApi := []O{}
